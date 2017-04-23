@@ -26,3 +26,13 @@ void AEntity::Tick(float DeltaTime)
 
 }
 
+AFaction* AEntity::GetFaction()
+{
+	return Faction;
+}
+
+void AEntity::SetFaction(AFaction * aFaction)
+{
+	Faction = aFaction;
+}
+

@@ -1,15 +1,41 @@
 Actions
 	procreation
+		low population
+		birth rate policy
+		needs 2 entities
 	attack
+		relations policy
+		exploration policy
 	discuss in faction
+		workload policy
+		needs 2 entities
+		morale
 	discuss with other faction (convince)
+		morale
+		borders policy
+		workload policy
+		relations policy
 	kidnap
+		relations policy
+		borders policy
+		trading policy ?
 	defend
+		borders policy
+		relations
 	trade
+		trading policy
 	emmigration
+		morale
+		borders policy
 	expatriation
+		workload policy (other factions)
+		borders policy
+		workload policy
 	explore
+		exploration policy
 	tourism
+		workload policy
+		borders policy
 
 Relations between factions ?
 Faction morale --> emmigration

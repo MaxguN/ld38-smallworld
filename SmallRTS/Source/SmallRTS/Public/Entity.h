@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Entity.generated.h"
 
+class AFaction;
+
 UCLASS()
 class SMALLRTS_API AEntity : public AActor
 {
@@ -22,6 +24,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-	
+	AFaction* GetFaction();
+	void SetFaction(AFaction *aFaction);
+
+private:
+	AFaction *Faction;
 };
