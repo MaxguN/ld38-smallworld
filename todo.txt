@@ -1,1 +1,16 @@
 TODO
+	- Rendering
+		- Territory Mesh
+		- Camera handling
+	- Simulation algorithm
+	- AI
+
+- Territory Mesh
+	- Define Area on the sphere
+	- create Area mesh with triangles
+	- update
+
+- Simulation algorithm
+	- parameters
+	- behaviour of people
+	- parameters effect on behaviour

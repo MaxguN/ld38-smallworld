@@ -1,0 +1,23 @@
+Actions
+	procreation
+	attack
+	discuss in faction
+	discuss with other faction (convince)
+	kidnap
+	defend
+	trade
+	emmigration
+	expatriation
+	explore
+	tourism
+
+Relations between factions ?
+Faction morale --> emmigration
+
+Policies
+	borders (open / close) --> defense, trade, immigration, expatriation
+	trading (more / less) --> trade
+	exploration (more / less) --> explore territory
+	birth rate (more / less) --> procreation
+	relations (peaceful / hostile) --> attack
+	workload (more / less) --> tourism, expatriation (from other factions)
