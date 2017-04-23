@@ -10,7 +10,8 @@ document.body.appendChild(renderer.view);
 var preloader = new Preloader(renderer);
 var player = new Player();
 var menu = null;//new Menu(renderer);
-var currentScene = preloader;
+// var currentScene = preloader;
+var currentScene = new Level(0, player, renderer);
 
 function tick(length) {
 	var deltaTime = PIXI.ticker.shared.elapsedMS / 1000;
