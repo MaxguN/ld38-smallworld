@@ -5,17 +5,12 @@ function Collider(tag, whitelist, shape) {
 }
 
 function Trigger(tag, whitelist, shape) {
-	this.triggerTag = tag;
-	this.triggerWhitelist = whitelist;
-	this.triggerShape = shape;
+	this.tag = tag;
+	this.whitelist = whitelist;
+	this.shape = shape;
 }
 
 var Tags = {
-	Player : 'player',
-	PlayerBullet : 'player bullet',
-	Ennemy : 'ennemy',
-	EnnemyBullet : 'ennemy bullet',
-	Seamark : 'seamark',
-	SightArea : 'sight area',
-	Radar : 'radar'
+	Entity : 'entity',
+	Zone : 'zone'
 }

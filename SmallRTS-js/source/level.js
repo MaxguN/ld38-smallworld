@@ -31,6 +31,7 @@ function Level(number, player, renderer) {
 	this.gui = new PIXI.Container();
 
 	this.world = null;
+	this.entities = [];
 
 	this.gui.position = new PIXI.Point(0,0);
 	this.gui.width = this.renderer.width;
@@ -46,10 +47,34 @@ Level.prototype.Init = function() {
 	this.world = new SmallWorld(350, 25);
 	this.game.addChild(this.world);
 
-	this.player.SetFaction(new Faction());
+	var playerFaction = new Faction(new Color(255,0,0), this.game);
+	this.player.SetFaction(playerFaction);
+
+	playerFaction.on('newEntity', function (entity) {
+		this.entities.push(entity);
+	}, this);
 
 	this.CenterCamera();
+
+	this.BeginPlay();
 };
+
+Level.prototype.BeginPlay = function () {
+	this.player.BeginPlay();
+
+	// TODO beginplay for AIs
+
+	// TODO initial collision check for zone claiming
+	this.entities.forEach(function (entity) {
+		var collision = this.Collides(entity);
+
+		if (collision.collides) {
+			collision.zones.forEach(function (zone) {
+				entity.faction.ClaimZone(zone);
+			}, this);
+		}
+	}, this);
+}
 
 Level.prototype.on = function (eventType, callback, self) {
 	if (this.listeners[eventType]) {
@@ -105,11 +130,8 @@ Level.prototype.win = function() {
 };
 
 Level.prototype.CenterCamera = function (point) {
-	this.game.x = (renderer.width - this.game.width) / 2;
-	this.game.y = (renderer.height - this.game.height) / 2;
-
-	console.log(renderer.width, renderer.height, this.game.width, this.game.height)
-	console.log(this.game.x, this.game.y)
+	this.game.x = renderer.width / 2;
+	this.game.y = renderer.height / 2;
 };
 
 Level.prototype.EndLevel = function () {
@@ -135,55 +157,22 @@ Level.prototype.EndGame = function () {
 	currentScene = new Menu(this.renderer);
 };
 
-Level.prototype.Collides = function(shape1, shape2) {
-	function intersectRectangles(rectangle1, rectangle2) {
-		var r1 = {
-			left : rectangle1.x,
-			right : rectangle1.x + rectangle1.width,
-			top : rectangle1.y,
-			bottom : rectangle1.y + rectangle1.height
-		};
-		var r2 = {
-			left : rectangle2.x,
-			right : rectangle2.x + rectangle2.width,
-			top : rectangle2.y,
-			bottom : rectangle2.y + rectangle2.height
-		};
+Level.prototype.Collides = function(trigger) {
+	var zones = [];
+	var collision = {};
 
-		return !(r2.left > r1.right || 
-				r2.right < r1.left || 
-				r2.top > r1.bottom ||
-				r2.bottom < r1.top);
-	}
-
-	function intersectSegmentCircle(a, b, c) {
-		var ac = Math.sqrt(Math.pow(a.x - c.x, 2) + Math.pow(a.y - c.y, 2));
-		var ab = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-
-		return c.radius >= Math.sqrt(Math.pow(ac, 2) - Math.pow(ab / 2, 2));
-	}
-
-	function intersectRectangleCircle(rectangle, circle) {
-		var r = {
-			left : rectangle.x,
-			right : rectangle.x + rectangle.width,
-			top : rectangle.y,
-			bottom : rectangle.y + rectangle.height
-		};
-		
-
-		return (rectangle.contains(circle.x, circle.y) ||
-				intersectSegmentCircle(new PIXI.Point(r.left, r.top), new PIXI.Point(r.left, r.bottom), circle) ||
-				intersectSegmentCircle(new PIXI.Point(r.left, r.bottom), new PIXI.Point(r.right, r.bottom), circle) ||
-				intersectSegmentCircle(new PIXI.Point(r.right, r.bottom), new PIXI.Point(r.right, r.top), circle) ||
-				intersectSegmentCircle(new PIXI.Point(r.right, r.top), new PIXI.Point(r.left, r.top), circle));
-	}
-
-	if (shape1.type === PIXI.SHAPES.RECT) {
-		if (shape2.type === PIXI.SHAPES.RECT) {
-			return intersectRectangles(shape1, shape2);
+	this.world.zones.forEach(function (zone) {
+		if (!zone.faction && trigger.shape.contains(zone.shape.x, zone.shape.y)) {
+			zones.push(zone);
 		}
+	}, this);
+
+	if (zones.length) {
+		collision.collides = true;
+		collision.zones = zones;
 	}
+
+	return collision;
 };
 
 Level.prototype.Keypress = function () {};
@@ -209,7 +198,21 @@ Level.prototype.Play = function () {
 };
 
 Level.prototype.Tick = function(length) {
-	this.world.Tick();
+	// this.world.Tick(length);
+	this.player.Tick(length);
+
+	this.entities.forEach(function (entity) {
+		if (entity.action === 'explore') {
+			var collision = this.Collides(entity);
+
+			if (collision.collides) {
+				collision.zones.forEach(function (zone) {
+					entity.faction.ClaimZone(zone);
+				}, this);
+			}
+		}
+	}, this);
+
 	this.Draw();
 };
 

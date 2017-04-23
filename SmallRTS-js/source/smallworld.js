@@ -20,6 +20,7 @@ SmallWorld.prototype.Init = function () {
 	var x;
 	var y;
 	var line = 0;
+	var newZone;
 
 	for (y = -this.radius; y <= this.radius; y += this.resolution) {
 		x = -this.radius;
@@ -30,7 +31,17 @@ SmallWorld.prototype.Init = function () {
 
 		for (; x <= this.radius; x += this.spacing) {
 			if (this.radius + this.resolution > Math.sqrt(Math.pow(this.circle.x - x, 2) + Math.pow(this.circle.y - y, 2))) {
-				this.zones.push(new PIXI.Circle(x, y, this.resolution));
+				newZone = new Trigger(Tags.Zone, [], new PIXI.Circle(x, y, this.resolution));
+				newZone.neighbors = [];
+
+				this.zones.forEach(function (zone) {
+					if (zone.shape.radius + newZone.shape.radius > Math.sqrt(Math.pow(newZone.shape.x - zone.shape.x, 2) + Math.pow(newZone.shape.y - zone.shape.y, 2))) {
+						zone.neighbors.push(newZone);
+						newZone.neighbors.push(zone);
+					}
+				}, this);
+
+				this.zones.push(newZone);
 			}
 		}
 
@@ -43,7 +54,7 @@ SmallWorld.prototype.Init = function () {
 
 	// this.lineStyle(1, 0xff0000, 1);
 	// this.zones.forEach(function (zone) {
-	// 	this.drawCircle(zone.x, zone.y, zone.radius);
+	// 	this.drawCircle(zone.shape.x, zone.shape.y, zone.shape.radius);
 	// }, this);
 }
 

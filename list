@@ -1,5 +1,5 @@
 Actions
-	procreation
+X	procreation
 		low population
 		birth rate policy
 		needs 2 entities
@@ -31,7 +31,7 @@ Actions
 		workload policy (other factions)
 		borders policy
 		workload policy
-	explore
+X	explore
 		exploration policy
 	tourism
 		workload policy
