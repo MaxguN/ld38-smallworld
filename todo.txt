@@ -1,19 +1,20 @@
 TODO
-	- UI for policies
-	- Control of policies
-	- Implement algorithm
+X - UI for policies						30min	17:30
+X - Control of policies					30min	18:00
+	- Implement algorithm					2h		22:15
 		- borders
 		- exploration
 		- relations
 		- workload
 		(- trading)
-	- Implement Actions (cf list 4 + 5)
-	- AI
-	- Change of world (animation, collision)
-	- Menu
-	- Pause
-	- Scoring
-	- Leaderboard
-	- Timer
-	- Speed scale
-	- BGM
+	- Implement Actions (cf list 4 + 5)		2h		00:15
+	- AI									2h		02:15
+	(- Action feedback)
+	- Change of world (animation, collision)30min	20:15
+	- Menu (4screens)						1h		19:45
+X - Pause									15min	18:15
+X - Timer									15min	18:30
+	- Scoring								15min	18:45
+	- Leaderboard							45min
+	- Speed scale							1h
+	- BGM									2h

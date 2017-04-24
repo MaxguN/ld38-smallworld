@@ -7,7 +7,7 @@ function Entity(faction) {
 	this.action = null;
 	this.target = null;
 
-	this.speed = 80; // pixels/s
+	this.speed = 20; // pixels/s
 
 	this.Init();
 }

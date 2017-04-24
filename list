@@ -42,7 +42,7 @@ Faction morale --> emmigration
 
 Policies
 	borders (open / close) --> defense, trade, immigration, expatriation
-	trading (more / less) --> trade
+	(trading (more / less) --> trade)
 	exploration (more / less) --> explore territory
 	birth rate (more / less) --> procreation
 	relations (peaceful / hostile) --> attack

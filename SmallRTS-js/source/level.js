@@ -6,6 +6,7 @@ function Level(number, player, renderer) {
 	this.number = number;
 
 	this.window = new PIXI.Rectangle(0, 0, renderer.width, renderer.height);
+	this.interface = {};
 
 	this.music = new Audio();
 
@@ -22,6 +23,7 @@ function Level(number, player, renderer) {
 		kill : []
 	};
 
+	this.timer = 0;
 	this.end = -1;
 	this.ending = false;
 	this.over = false;
@@ -51,6 +53,7 @@ Level.prototype.Init = function() {
 	this.game.mask = this.gameMask;
 
 	this.container.addChild(this.game);
+	this.container.addChild(this.gui);
 
 	this.world = new SmallWorld(350, 25);
 	this.game.addChild(this.world);
@@ -98,6 +101,8 @@ Level.prototype.Init = function() {
 };
 
 Level.prototype.BeginPlay = function () {
+	this.interface = new GUI(this);
+
 	this.ais.forEach(function (ai) {
 		ai.BeginPlay();
 	}, this);
@@ -241,23 +246,29 @@ Level.prototype.Play = function () {
 };
 
 Level.prototype.Tick = function(length) {
-	// this.world.Tick(length);
-	this.ais.forEach(function (ai) {
-		ai.Tick(length);
-	}, this);
-	this.player.Tick(length);
+	if (!this.paused) {
+		this.timer += length;
 
-	this.entities.forEach(function (entity) {
-		if (entity.action === 'explore') {
-			var collision = this.Collides(entity);
+		// this.world.Tick(length);
+		this.ais.forEach(function (ai) {
+			ai.Tick(length);
+		}, this);
+		this.player.Tick(length);
 
-			if (collision.collides) {
-				collision.zones.forEach(function (zone) {
-					entity.faction.ClaimZone(zone);
-				}, this);
+		this.entities.forEach(function (entity) {
+			if (entity.action === 'explore') {
+				var collision = this.Collides(entity);
+
+				if (collision.collides) {
+					collision.zones.forEach(function (zone) {
+						entity.faction.ClaimZone(zone);
+					}, this);
+				}
 			}
-		}
-	}, this);
+		}, this);
+
+		this.interface.Tick(length);
+	}
 
 	this.Draw();
 };
