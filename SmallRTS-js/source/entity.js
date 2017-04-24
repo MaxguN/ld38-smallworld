@@ -7,7 +7,7 @@ function Entity(faction) {
 	this.action = null;
 	this.target = null;
 
-	this.speed = 20; // pixels/s
+	this.speed = 80; // pixels/s
 
 	this.Init();
 }
@@ -38,7 +38,8 @@ Entity.prototype.DoAction = function (action) {
 			if (freeZones.length) {
 				this.target = freeZones[Math.floor(Math.random() * freeZones.length)];
 			} else {
-				this.faction.FreeEntity(this);
+				this.faction.StopExploration();
+				this.FinishAction();
 			}
 
 			break;
@@ -91,21 +92,25 @@ Entity.prototype.MoveBy = function (x, y) {
 
 Entity.prototype.Tick = function (length) {
 	if (this.target) {
-		var x = this.target.shape.x - this.x;
-		var y = this.target.shape.y - this.y;
-		var distance = Math.sqrt(x * x + y * y);
+		if (this.action === 'explore' && this.target.faction) {
+			this.FinishAction();
+		} else {
+			var x = this.target.shape.x - this.x;
+			var y = this.target.shape.y - this.y;
+			var distance = Math.sqrt(x * x + y * y);
 
-		if (distance) {
-			var delta = this.speed * length / distance;
+			if (distance) {
+				var delta = this.speed * length / distance;
 
-			if (delta > 1) {
-				delta = 1;
+				if (delta > 1) {
+					delta = 1;
+					this.FinishAction();
+				}
+
+				this.MoveBy(delta * x, delta * y);
+			} else {
 				this.FinishAction();
 			}
-
-			this.MoveBy(delta * x, delta * y);
-		} else {
-			this.FinishAction();
 		}
 	}
 }

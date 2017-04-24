@@ -2,6 +2,7 @@ function Level(number, player, renderer) {
 	var self = this;
 
 	this.player = player;
+	this.ais = [];
 	this.number = number;
 
 	this.window = new PIXI.Rectangle(0, 0, renderer.width, renderer.height);
@@ -28,6 +29,7 @@ function Level(number, player, renderer) {
 	this.renderer = renderer;
 	this.container = new PIXI.Container();
 	this.game = new PIXI.Container();
+	this.gameMask = new PIXI.Graphics();
 	this.gui = new PIXI.Container();
 
 	this.world = null;
@@ -42,15 +44,51 @@ function Level(number, player, renderer) {
 };
 
 Level.prototype.Init = function() {
+	this.gameMask.beginFill(0xffffff, 1);
+	this.gameMask.drawCircle(this.renderer.width / 2, this.renderer.height / 2, 350);
+	this.gameMask.endFill();
+	this.gameMask.isMask = true;
+	this.game.mask = this.gameMask;
+
 	this.container.addChild(this.game);
 
 	this.world = new SmallWorld(350, 25);
 	this.game.addChild(this.world);
 
-	var playerFaction = new Faction(new Color(255,0,0), this.game);
-	this.player.SetFaction(playerFaction);
+	var ai;
+	var faction;
 
-	playerFaction.on('newEntity', function (entity) {
+	ai = new AIController();
+	faction = new Faction(new Color(255,0,0), this.game, 0, -300);
+	ai.SetFaction(faction);
+	faction.on('newEntity', function (entity) {
+		this.entities.push(entity);
+	}, this);
+
+	this.ais.push(ai);
+
+	ai = new AIController();
+	faction = new Faction(new Color(0,2555,0), this.game, -200, 200);
+	ai.SetFaction(faction);
+	faction.on('newEntity', function (entity) {
+		this.entities.push(entity);
+	}, this);
+
+	this.ais.push(ai);
+
+	ai = new AIController();
+	faction = new Faction(new Color(255,255,0), this.game, 200, 200);
+	ai.SetFaction(faction);
+	faction.on('newEntity', function (entity) {
+		this.entities.push(entity);
+	}, this);
+
+	this.ais.push(ai);
+
+	faction = new Faction(new Color(0,0,255), this.game);
+	this.player.SetFaction(faction);
+
+	faction.on('newEntity', function (entity) {
 		this.entities.push(entity);
 	}, this);
 
@@ -60,6 +98,9 @@ Level.prototype.Init = function() {
 };
 
 Level.prototype.BeginPlay = function () {
+	this.ais.forEach(function (ai) {
+		ai.BeginPlay();
+	}, this);
 	this.player.BeginPlay();
 
 	// TODO beginplay for AIs
@@ -74,6 +115,8 @@ Level.prototype.BeginPlay = function () {
 			}, this);
 		}
 	}, this);
+
+	console.log(this.entities);
 }
 
 Level.prototype.on = function (eventType, callback, self) {
@@ -130,8 +173,8 @@ Level.prototype.win = function() {
 };
 
 Level.prototype.CenterCamera = function (point) {
-	this.game.x = renderer.width / 2;
-	this.game.y = renderer.height / 2;
+	this.game.x = this.renderer.width / 2;
+	this.game.y = this.renderer.height / 2;
 };
 
 Level.prototype.EndLevel = function () {
@@ -199,6 +242,9 @@ Level.prototype.Play = function () {
 
 Level.prototype.Tick = function(length) {
 	// this.world.Tick(length);
+	this.ais.forEach(function (ai) {
+		ai.Tick(length);
+	}, this);
 	this.player.Tick(length);
 
 	this.entities.forEach(function (entity) {

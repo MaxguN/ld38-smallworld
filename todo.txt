@@ -1,8 +1,19 @@
 TODO
-X - Rendering
-	- Simulation algorithm
-->		- policies
-		- parameters
-		- behaviour of people
-		- parameters effect on behaviour
+	- UI for policies
+	- Control of policies
+	- Implement algorithm
+		- borders
+		- exploration
+		- relations
+		- workload
+		(- trading)
+	- Implement Actions (cf list 4 + 5)
 	- AI
+	- Change of world (animation, collision)
+	- Menu
+	- Pause
+	- Scoring
+	- Leaderboard
+	- Timer
+	- Speed scale
+	- BGM

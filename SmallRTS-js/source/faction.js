@@ -1,12 +1,28 @@
-function Faction(color, container) {
+function Faction(color, container, x, y) {
+	this.x = x;
+	this.y = y;
+
 	this.territory = null;
 	this.entities = [];
 	this.freeEntities = [];
 
 	this.actions = [];
+	this.policies = {
+		borders : 0,
+		trading : 5,
+		exploration : 5,
+		birthrate : 5,
+		relations : 0,
+		workload : 5
+	};
+	this.policiesOrder = [];
+	this.relations = null;
+	this.morale = 0;
 
 	this.color = color;
 	this.container = container;
+
+	this.canExplore = true;
 
 	this.listeners = {
 		newEntity : []
@@ -18,11 +34,13 @@ function Faction(color, container) {
 Faction.prototype.Init = function () {
 	this.territory = new Territory(this.color.Lighter());
 	this.container.addChild(this.territory);
+
+	this.ReorderPolicies();
 }
 
 Faction.prototype.BeginPlay = function () {
-	this.AddEntity();
-	this.AddEntity();
+	this.AddEntity(null, this.x, this.y);
+	this.AddEntity(null, this.x, this.y);
 }
 
 Faction.prototype.on = function (eventType, callback, self) {
@@ -102,19 +120,58 @@ Faction.prototype.AbandonZone = function (zone) {
 	zone.faction = null;
 }
 
+Faction.prototype.ReorderPolicies = function () {
+	this.policiesOrder = [];
+
+	for (var policy in this.policies) {
+		var inserted = this.policiesOrder.some(function (value, index) {
+			if (this.policies[policy] > this.policies[value]) {
+				this.policiesOrder.splice(index, 0, policy);
+				return true;
+			}
+		}, this);
+
+		if (!inserted) {
+			this.policiesOrder.push(policy);
+		}
+	}
+}
+
 Faction.prototype.RunAlgorithm = function () {
-	// TODO implement
 	if (this.actions.length === 0) {
 		var actionCount = Math.max(2, Math.min(10, this.entities.length));
+		var birthrate = this.policies.birthrate;
 
-		if (this.entities.length < 50) {
-			this.actions.push('procreate');
-			this.actions.push('procreate');
-		}
+		do {
+			if (this.entities.length < 10 + this.policies.birthrate * 4) {
+				this.actions.push('procreate');
+				this.actions.push('procreate');
+			}
 
-		while (this.actions.length < actionCount) {
-			this.actions.push('explore');
-		}
+			birthrate -= 2;
+		} while (this.actions.length < actionCount - 1 && birthrate > 5);
+
+		this.policiesOrder.forEach(function (policy) {
+			switch (policy) {
+				case 'borders':
+					// TODO implement
+					break;
+				case 'trading':
+					// TODO implement
+					break;
+				case 'exploration':
+					while (this.canExplore && this.actions.length < actionCount) {
+						this.actions.push('explore');
+					}
+					break;
+				case 'relations':
+					// TODO implement
+					break;
+				case 'workload':
+					// TODO implement
+					break;
+			}
+		}, this);
 	}
 }
 
@@ -129,6 +186,10 @@ Faction.prototype.FreeEntity = function (entity) {
 	this.freeEntities.push(entity);
 }
 
+Faction.prototype.StopExploration = function () {
+	this.canExplore = false;
+}
+
 Faction.prototype.Tick = function (length) {
 	this.RunAlgorithm();
 	this.DoActions();
@@ -136,4 +197,6 @@ Faction.prototype.Tick = function (length) {
 	this.entities.forEach(function (entity) {
 		entity.Tick(length);
 	}, this);
+
+	this.territory.Tick(length)
 }

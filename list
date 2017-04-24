@@ -6,11 +6,11 @@ X	procreation
 	attack
 		relations policy
 		exploration policy
-	discuss in faction
+-	discuss in faction
 		workload policy
 		needs 2 entities
 		morale
-	discuss with other faction (convince)
+-	discuss with other faction (convince)
 		morale
 		borders policy
 		workload policy
@@ -19,21 +19,21 @@ X	procreation
 		relations policy
 		borders policy
 		trading policy ?
-	defend
+-	defend
 		borders policy
 		relations
-	trade
+-	trade
 		trading policy
 	emmigration
 		morale
 		borders policy
-	expatriation
+-	expatriation
 		workload policy (other factions)
 		borders policy
 		workload policy
 X	explore
 		exploration policy
-	tourism
+	tourism --> morale
 		workload policy
 		borders policy
 
