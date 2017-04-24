@@ -1,4 +1,4 @@
-function Faction(color, container, x, y) {
+function Faction(color, level, container, x, y) {
 	this.x = x;
 	this.y = y;
 
@@ -8,12 +8,12 @@ function Faction(color, container, x, y) {
 
 	this.actions = [];
 	this.policies = {
-		borders : 0,
-		trading : 5,
 		exploration : 5,
+		workload : 5,
+		trading : 5,
 		birthrate : 5,
-		relations : 0,
-		workload : 5
+		borders : 0,
+		relations : 0
 	};
 	this.policiesOrder = [];
 	this.relations = null;
@@ -21,6 +21,7 @@ function Faction(color, container, x, y) {
 
 	this.color = color;
 	this.container = container;
+	this.level = level;
 
 	this.canExplore = true;
 
@@ -95,15 +96,49 @@ Faction.prototype.AddEntity = function (entity, x, y) {
 Faction.prototype.TransferEntity = function (entity) {
 	entity.faction.RemoveEntity(entity);
 
-	// TODO cancel current action of entity
+	entity.FinishAction();
 
 	this.AddEntity(entity);
 	entity.faction = this;
+	entity.ResetColor();
 }
 
 Faction.prototype.RemoveEntity = function (entity) {
-	this.entities.splice(this.entities.indexOf(entity), 1);
-	this.freeEntities.splice(this.freeEntities.indexOf(entity), 1);
+	var index = this.entities.indexOf(entity);
+	if (index !== -1) {
+		this.entities.splice(index, 1);
+	}
+
+	index = this.freeEntities.indexOf(entity);
+	if (index !== -1) {
+		this.freeEntities.splice(index, 1);
+	}
+}
+
+Faction.prototype.GetOtherEntities = function () {
+	var entities = [];
+
+	this.level.entities.forEach(function (entity) {
+		if (entity.faction !== this) {
+			entities.push(entity);
+		}
+	}, this);
+
+	return entities;
+}
+
+Faction.prototype.GetOtherEntitiesOnTerritory = function () {
+	var entities = [];
+
+	this.level.entities.forEach(function (entity) {
+		if (entity.faction !== this) {
+			if (this.territory.Collides(entity).collides) {
+				entities.push(entity);
+			}
+		}
+	}, this);
+
+	return entities;
 }
 
 Faction.prototype.ClaimZone = function (zone) {
@@ -137,41 +172,126 @@ Faction.prototype.ReorderPolicies = function () {
 	}
 }
 
+Faction.prototype.addActionAttack = function (actionCount) {
+	var hostility = -this.policies.relations;
+	var exploration = this.policies.exploration;
+	var probability = exploration / 10;
+
+	while (this.actions.length < actionCount && hostility > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('attack');
+		}
+		hostility -= 4;
+	}
+}
+
+Faction.prototype.addActionEmmigrate = function (actionCount) {
+	var closeness = -this.policies.borders;
+	var probability = 0.1;
+
+	while (this.actions.length < actionCount && closeness > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('emmigrate');
+		}
+		closeness -= 3;
+	}
+}
+
+Faction.prototype.addActionExplore = function (actionCount) {
+	var exploration = this.policies.exploration;
+
+	while (this.canExplore && this.actions.length < actionCount && exploration > 0) {
+		this.actions.push('explore'); // TODO check if necessary to add RNG
+		exploration -= 2;
+	}
+}
+
+Faction.prototype.addActionKidnap = function (actionCount) {
+	var hostility = -this.policies.relations;
+	var closeness = Math.max(0, Math.min(10, -this.policies.borders));
+	var probability = closeness / 10;
+
+	while (this.actions.length < actionCount && hostility > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('kidnap');
+		}
+		hostility -= 3;
+	}
+}
+
+Faction.prototype.addActionProcreate = function (actionCount) {
+	var birthrate = this.policies.birthrate;
+
+	do {
+		if (this.entities.length < 10 + this.policies.birthrate * 4) {
+			this.actions.push('procreate');
+			this.actions.push('procreate');
+		}
+
+		birthrate -= 2;
+	} while (this.actions.length < actionCount - 1 && birthrate > 5);
+}
+
+Faction.prototype.addActionTrade = function (actionCount) {
+
+}
+
+Faction.prototype.addActionTourism = function (actionCount) {
+	var freetime = 10 - this.policies.workload;
+	var openness = Math.max(0, Math.min(10, this.policies.borders));
+	var probability = openness / 10;
+
+	while (this.actions.length < actionCount && freetime >= 0) {
+		if (Math.random() < probability) {
+			this.actions.push('tourism');
+		}
+		freetime -= 3;
+	}
+}
+
 Faction.prototype.RunAlgorithm = function () {
 	if (this.actions.length === 0) {
 		var actionCount = Math.max(2, Math.min(10, this.entities.length));
-		var birthrate = this.policies.birthrate;
-
-		do {
-			if (this.entities.length < 10 + this.policies.birthrate * 4) {
-				this.actions.push('procreate');
-				this.actions.push('procreate');
-			}
-
-			birthrate -= 2;
-		} while (this.actions.length < actionCount - 1 && birthrate > 5);
+		
+		this.addActionProcreate(actionCount);
 
 		this.policiesOrder.forEach(function (policy) {
 			switch (policy) {
 				case 'borders':
-					// TODO implement
+					this.addActionTourism(actionCount);
+					this.addActionKidnap(actionCount);
+					this.addActionEmmigrate(actionCount);
 					break;
 				case 'trading':
-					// TODO implement
+					this.addActionTrade(actionCount);
 					break;
 				case 'exploration':
-					while (this.canExplore && this.actions.length < actionCount) {
-						this.actions.push('explore');
-					}
+					this.addActionExplore(actionCount);
+					this.addActionAttack(actionCount);
 					break;
 				case 'relations':
-					// TODO implement
+					this.addActionAttack(actionCount);
+					this.addActionKidnap(actionCount);
 					break;
 				case 'workload':
-					// TODO implement
+					this.addActionTourism(actionCount);
 					break;
 			}
 		}, this);
+
+		while (this.actions.length < actionCount) {
+			this.actions.push('walk');
+		}
+		
+		this.actions.push('walk');
+
+		var actions = [];
+
+		while (this.actions.length) {
+			actions.splice(Math.floor(Math.random() * actions.length), 0, this.actions.splice(Math.floor(Math.random() * this.actions.length), 1)[0]);
+		}
+
+		this.actions = actions;
 	}
 }
 
@@ -183,7 +303,10 @@ Faction.prototype.DoActions = function () {
 
 Faction.prototype.FreeEntity = function (entity) {
 	entity.Free();
-	this.freeEntities.push(entity);
+
+	if (this.freeEntities.indexOf(entity) === -1) {
+		this.freeEntities.push(entity);
+	}
 }
 
 Faction.prototype.StopExploration = function () {

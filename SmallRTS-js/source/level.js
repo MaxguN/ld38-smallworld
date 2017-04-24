@@ -36,6 +36,7 @@ function Level(number, player, renderer) {
 
 	this.world = null;
 	this.entities = [];
+	this.factions = [];
 
 	this.gui.position = new PIXI.Point(0,0);
 	this.gui.width = this.renderer.width;
@@ -62,38 +63,42 @@ Level.prototype.Init = function() {
 	var faction;
 
 	ai = new AIController();
-	faction = new Faction(new Color(255,0,0), this.game, 0, -300);
+	faction = new Faction(new Color(255,0,0), this, this.game, 0, -300);
 	ai.SetFaction(faction);
 	faction.on('newEntity', function (entity) {
 		this.entities.push(entity);
 	}, this);
 
+	this.factions.push(faction);
 	this.ais.push(ai);
 
 	ai = new AIController();
-	faction = new Faction(new Color(0,2555,0), this.game, -200, 200);
+	faction = new Faction(new Color(0,2555,0), this, this.game, -200, 200);
 	ai.SetFaction(faction);
 	faction.on('newEntity', function (entity) {
 		this.entities.push(entity);
 	}, this);
 
+	this.factions.push(faction);
 	this.ais.push(ai);
 
 	ai = new AIController();
-	faction = new Faction(new Color(255,255,0), this.game, 200, 200);
+	faction = new Faction(new Color(255,255,0), this, this.game, 200, 200);
 	ai.SetFaction(faction);
 	faction.on('newEntity', function (entity) {
 		this.entities.push(entity);
 	}, this);
 
+	this.factions.push(faction);
 	this.ais.push(ai);
 
-	faction = new Faction(new Color(0,0,255), this.game);
+	faction = new Faction(new Color(0,0,255), this, this.game, 0, 0);
 	this.player.SetFaction(faction);
-
 	faction.on('newEntity', function (entity) {
 		this.entities.push(entity);
 	}, this);
+
+	this.factions.push(faction);
 
 	this.CenterCamera();
 
@@ -122,6 +127,27 @@ Level.prototype.BeginPlay = function () {
 	}, this);
 
 	console.log(this.entities);
+}
+
+Level.prototype.GetRandomFaction = function (blacklist) {
+	var faction = null;
+
+	if (this.factions.length > 1) {
+		do {
+			faction = this.factions[Math.floor(Math.random() * this.factions.length)];
+		} while (blacklist && faction === blacklist);
+	}
+
+	return faction;
+}
+
+Level.prototype.RemoveEntity = function (entity) {
+	var index = this.entities.indexOf(entity);
+
+	if (index !== -1) {
+		this.entities.splice(index, 1);
+		this.game.removeChild(entity);
+	}
 }
 
 Level.prototype.on = function (eventType, callback, self) {

@@ -1,11 +1,24 @@
 Actions
-X	procreation
+X	procreate
 		low population
 		birth rate policy
 		needs 2 entities
-	attack
-		relations policy
+X	explore
 		exploration policy
+	attack
+		relations policy 1
+		exploration policy
+	kidnap (rng)
+		relations policy 2
+		borders policy 2
+	emmigrate (rng)
+		morale
+		borders policy 3
+	tourism --> morale (rng)
+		workload policy 1
+		borders policy 1
+	walk
+
 -	discuss in faction
 		workload policy
 		needs 2 entities
@@ -15,27 +28,15 @@ X	procreation
 		borders policy
 		workload policy
 		relations policy
-	kidnap
-		relations policy
-		borders policy
-		trading policy ?
 -	defend
 		borders policy
 		relations
 -	trade
 		trading policy
-	emmigration
-		morale
-		borders policy
 -	expatriation
 		workload policy (other factions)
 		borders policy
 		workload policy
-X	explore
-		exploration policy
-	tourism --> morale
-		workload policy
-		borders policy
 
 Relations between factions ?
 Faction morale --> emmigration

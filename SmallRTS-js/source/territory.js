@@ -25,6 +25,28 @@ Territory.prototype.RemoveZone = function (zone) {
 	this.Draw();
 }
 
+Territory.prototype.GetRandomZone = function () {
+	return this.zones[Math.floor(Math.random() * this.zones.length)];
+}
+
+Territory.prototype.Collides = function(trigger) {
+	var zones = [];
+	var collision = {};
+
+	this.zones.forEach(function (zone) {
+		if (zone.shape.contains(trigger.shape.x, trigger.shape.y)) {
+			zones.push(zone);
+		}
+	}, this);
+
+	if (zones.length) {
+		collision.collides = true;
+		collision.zones = zones;
+	}
+
+	return collision;
+};
+
 Territory.prototype.Draw = function () {
 	this.drawCall = true;
 }

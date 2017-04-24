@@ -7,7 +7,10 @@ function Entity(faction) {
 	this.action = null;
 	this.target = null;
 
-	this.speed = 20; // pixels/s
+	this.runSpeed = 60;
+	this.walkSpeed = 20;
+
+	this.speed = this.walkSpeed; // pixels/s
 
 	this.Init();
 }
@@ -16,15 +19,55 @@ Entity.prototype = Object.create(PIXI.Graphics.prototype);
 Entity.prototype.constructor = Entity;
 
 Entity.prototype.Init = function () {
+	this.ResetColor();
+}
+
+Entity.prototype.ResetColor = function () {
+	this.clear();
 	this.beginFill(this.faction.color.Darker().toInt(), 1);
 	this.drawCircle(0, 0, 3);
 	this.endFill();
 }
 
 Entity.prototype.DoAction = function (action) {
+	this.Free();
 	this.action = action;
 
+	function getDistance(a, b) {
+		return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+	}
+
 	switch (this.action) {
+		case 'attack':
+			var entities = this.faction.GetOtherEntities();
+
+			if (entities.length) {
+				this.target = entities.shift();
+				var distance = getDistance(this, this.target);
+
+				entities.forEach(function (other) {
+					var newDistance = getDistance(this, other);
+
+					if (newDistance < distance) {
+						this.target = other;
+						distance = newDistance;
+					}
+				}, this);
+
+				this.speed = this.runSpeed;
+			} else {
+				this.FinishAction();
+			}
+			break;
+		case 'emmigrate':
+			var faction = this.faction.level.GetRandomFaction(this.faction);
+
+			if (faction) {
+				faction.TransferEntity(this);
+			}
+
+			this.FinishAction();
+			break;
 		case 'explore':
 			var freeZones = [];
 			this.faction.territory.zones.forEach(function (zone) {
@@ -43,6 +86,27 @@ Entity.prototype.DoAction = function (action) {
 			}
 
 			break;
+		case 'kidnap':
+			var entities = this.faction.GetOtherEntitiesOnTerritory();
+
+			if (entities.length) {
+				this.target = entities.shift();
+				var distance = getDistance(this, this.target);
+
+				entities.forEach(function (other) {
+					var newDistance = getDistance(this, other);
+
+					if (newDistance < distance) {
+						this.target = other;
+						distance = newDistance;
+					}
+				}, this);
+
+				this.speed = this.runSpeed;
+			} else {
+				this.FinishAction();
+			}
+			break;
 		case 'procreate':
 			this.faction.entities.forEach(function (entity) {
 				if (entity !== this && entity.action === 'procreate') {
@@ -53,16 +117,44 @@ Entity.prototype.DoAction = function (action) {
 				}
 			}, this);
 			break;
+		case 'tourism':
+			var faction = this.faction.level.GetRandomFaction(this.faction);
+
+			if (faction) {
+				this.target = faction.territory.GetRandomZone();
+			} else {
+				this.FinishAction();
+			}
+			break;
+		case 'walk':
+			this.target = this.faction.territory.GetRandomZone();
+			break;
 	}
 }
 
 Entity.prototype.FinishAction = function () {
 	switch (this.action) {
+		case 'attack':
+			this.speed = this.walkSpeed;
+
+			if (this.target) {
+				this.target.Kill();
+			}
+			break;
+		case 'kidnap':
+			this.speed = this.walkSpeed;
+
+			if (this.target) {
+				this.faction.TransferEntity(this.target);
+			}
+			break;
 		case 'procreating':
 			if (this.target) {
 				this.target.FinishAction();
 				this.faction.AddEntity(null, this.x, this.y);
 			}
+			break;
+		case 'tourism':
 			break;
 	}
 
@@ -72,6 +164,12 @@ Entity.prototype.FinishAction = function () {
 Entity.prototype.Free = function () {
 	this.action = null;
 	this.target = null;
+}
+
+Entity.prototype.Kill = function () {
+	this.faction.RemoveEntity(this);
+	this.faction.level.RemoveEntity(this);
+	this.Free();
 }
 
 Entity.prototype.MoveTo = function (x, y) {
