@@ -237,11 +237,13 @@ Level.prototype.EndLevel = function () {
 };
 
 Level.prototype.Victory = function () {
-	console.log('Victory');
+	menu.EndGame(true, this.interface.SecondsToDisplay(this.timer));
+	currentScene = menu;
 };
 
 Level.prototype.Defeat = function () {
-	console.log('Defeat');
+	menu.EndGame(false);
+	currentScene = menu;
 };
 
 Level.prototype.EndGame = function () {

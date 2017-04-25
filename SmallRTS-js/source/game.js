@@ -7,11 +7,12 @@ renderer.backgroundColor = 0x333333;
 renderer.roundPixels = true;
 document.body.appendChild(renderer.view);
 
-var preloader = new Preloader(renderer);
+// var preloader = new Preloader(renderer);
 var player = new Player();
-var menu = null;//new Menu(renderer);
+var menu = new Menu(renderer);
 // var currentScene = preloader;
 var currentScene = new Level(0, player, renderer);
+currentScene = menu;
 
 function tick(length) {
 	var deltaTime = PIXI.ticker.shared.elapsedMS / 1000;
@@ -21,9 +22,9 @@ function tick(length) {
 ticker.add(tick)
 ticker.start();
 
-preloader.on('ready', function () {
-	currentScene = new Level(0, player, renderer);
-});
+// preloader.on('ready', function () {
+// 	currentScene = new Level(0, player, renderer);
+// });
 
 mouse.attachTo(renderer.view);
 renderer.view.addEventListener('click', function () {window.focus()});

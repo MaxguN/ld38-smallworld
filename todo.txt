@@ -1,7 +1,7 @@
 TODO
 X - AI									30min	01:05
 X - win/lose condition					30min	01:35	
-	- Menu (4screens)						50min		03:00
+X - Menu (4screens)						50min		03:00
 		- main menu
 		- credits
 		- end screen
