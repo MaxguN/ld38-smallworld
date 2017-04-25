@@ -138,7 +138,17 @@ Entity.prototype.FinishAction = function () {
 			this.speed = this.walkSpeed;
 
 			if (this.target) {
+				var otherFaction = null;
+
+				if (this.target.faction.entities.length === 1) {
+					otherFaction = this.target.faction;
+				}
+
 				this.target.Kill();
+				
+				if (otherFaction) {
+					this.faction.TakeOver(otherFaction);
+				}
 			}
 			break;
 		case 'kidnap':

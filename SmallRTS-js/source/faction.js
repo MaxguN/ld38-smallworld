@@ -155,6 +155,16 @@ Faction.prototype.AbandonZone = function (zone) {
 	zone.faction = null;
 }
 
+Faction.prototype.TakeOver = function (faction) {
+	var zones = faction.territory.zones.slice();
+
+	zones.forEach(function (zone) {
+		this.ClaimZone(zone);
+	}, this);
+
+	this.level.RemoveFaction(faction);
+}
+
 Faction.prototype.ReorderPolicies = function () {
 	this.policiesOrder = [];
 

@@ -1,14 +1,19 @@
 TODO
-X - Implement algorithm					2h		22:15
-X - Implement Actions (cf list 5 + 5)		2h		00:15
-	- AI									2h		02:15
-	(- Action feedback)
-	- Change of world (animation, collision)30min	20:15
-	- Menu (4screens)						1h		19:45
-	- Scoring								15min	18:45
+X - AI									30min	01:05
+X - win/lose condition					30min	01:35	
+	- Menu (4screens)						50min		03:00
+		- main menu
+		- credits
+		- end screen
+		(- leaderboard)
+	
 	- Leaderboard							45min
+	- Scoring								15min	
+	- Change of world (animation, collision)1h		
 	- Speed scale							1h
 	- BGM									2h
-
+	(- Action feedback)
+	
 	- count population
-	- win/lose condition
+
+	- Fix infinite recursive loop

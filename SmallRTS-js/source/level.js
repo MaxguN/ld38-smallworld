@@ -150,6 +150,21 @@ Level.prototype.RemoveEntity = function (entity) {
 	}
 }
 
+Level.prototype.RemoveFaction = function (faction) {
+	var index = this.factions.indexOf(faction);
+
+	if (index !== -1) {
+		this.factions.splice(index, 1);
+		this.game.removeChild(faction.territory);
+	}
+
+	if (this.player.faction === faction) {
+		this.Defeat();
+	} else if (this.factions.length === 1) {
+		this.Victory();
+	}
+}
+
 Level.prototype.on = function (eventType, callback, self) {
 	if (this.listeners[eventType]) {
 		this.listeners[eventType].push({func : callback, object : self});
@@ -222,9 +237,11 @@ Level.prototype.EndLevel = function () {
 };
 
 Level.prototype.Victory = function () {
+	console.log('Victory');
 };
 
 Level.prototype.Defeat = function () {
+	console.log('Defeat');
 };
 
 Level.prototype.EndGame = function () {

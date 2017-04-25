@@ -4,7 +4,7 @@ function Territory(color) {
 	this.color = color;
 
 	this.zones = [];
-	this.freeZones = [];
+	this.freeZones = []; // TODO remove
 
 	this.drawCall = false;
 }
