@@ -37,6 +37,19 @@ function Level(number, player, renderer) {
 	this.world = null;
 	this.entities = [];
 	this.factions = [];
+	this.replay = new Replay();
+	/*
+		Record (timestamped)
+			- add entities
+				- id
+				- faction
+			- actions
+				- entity id
+			- finishAction
+				- entity id
+			- policyChange
+				- faction
+	*/
 
 	this.gui.position = new PIXI.Point(0,0);
 	this.gui.width = this.renderer.width;
@@ -56,7 +69,7 @@ Level.prototype.Init = function() {
 	this.container.addChild(this.game);
 	this.container.addChild(this.gui);
 
-	this.world = new SmallWorld(350, 25);
+	this.world = new SmallWorld(350, 20);
 	this.game.addChild(this.world);
 
 	var ai;

@@ -1,19 +1,19 @@
 TODO
-X - AI									30min	01:05
-X - win/lose condition					30min	01:35	
-X - Menu (4screens)						50min		03:00
-		- main menu
-		- credits
-		- end screen
-		(- leaderboard)
-	
-	- Leaderboard							45min
-	- Scoring								15min	
-	- Change of world (animation, collision)1h		
-	- Speed scale							1h
-	- BGM									2h
+	- Replay
+	- Change of world (animation, collision)
+	- real AI
+	- Scoring
+	- Leaderboard
+	- Speed scale
+	- BGM
 	(- Action feedback)
-	
-	- count population
 
-	- Fix infinite recursive loop
+TOFIX
+	- infinite recursive loop
+	- faction not given to other after last kill
+	- faction not given on emmigration
+
+TOOPTIM
+	- check process difference between
+		- rectangle.contains
+		- circle.contains

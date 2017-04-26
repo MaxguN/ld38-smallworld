@@ -91,6 +91,8 @@ Faction.prototype.AddEntity = function (entity, x, y) {
 
 	this.entities.push(entity);
 	this.freeEntities.push(entity);
+
+	this.level.update();
 }
 
 Faction.prototype.TransferEntity = function (entity) {
@@ -113,6 +115,8 @@ Faction.prototype.RemoveEntity = function (entity) {
 	if (index !== -1) {
 		this.freeEntities.splice(index, 1);
 	}
+
+	this.level.update();
 }
 
 Faction.prototype.GetOtherEntities = function () {

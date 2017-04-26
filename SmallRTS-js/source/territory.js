@@ -57,7 +57,17 @@ Territory.prototype.Tick = function (length) {
 		this.beginFill(this.color.toInt(), 1);
 		// this.lineStyle(1, 0xff0000, 1);
 		this.zones.forEach(function (zone) {
-			this.drawCircle(zone.shape.x, zone.shape.y, zone.shape.radius);
+			var x = zone.shape.x;
+			var y = zone.shape.y;
+			var outerRadius = zone.shape.radius * 2 / Math.sqrt(3);
+			this.moveTo(x + Math.cos(0) * outerRadius, y + Math.sin(0) * outerRadius);
+			this.lineTo(x + Math.cos(Math.PI / 3) * outerRadius, y + Math.sin(Math.PI / 3) * outerRadius);
+			this.lineTo(x + Math.cos(2 * Math.PI / 3) * outerRadius, y + Math.sin(2 * Math.PI / 3) * outerRadius);
+			this.lineTo(x + Math.cos(Math.PI) * outerRadius, y + Math.sin(Math.PI) * outerRadius);
+			this.lineTo(x + Math.cos(4 * Math.PI / 3) * outerRadius, y + Math.sin(4 * Math.PI / 3) * outerRadius);
+			this.lineTo(x + Math.cos(5 * Math.PI / 3) * outerRadius, y + Math.sin(5 * Math.PI / 3) * outerRadius);
+			this.lineTo(x + Math.cos(0) * outerRadius, y + Math.sin(0) * outerRadius);
+			// this.drawCircle(zone.shape.x, zone.shape.y, zone.shape.radius);
 		}, this);
 		this.endFill();
 

@@ -13,6 +13,7 @@ function GUI(level) {
 		workload : {},
 		trading : {}
 	};
+	this.population = {};
 
 	this.timer = {};
 	this.score = {};
@@ -230,7 +231,10 @@ GUI.prototype.Init = function () {
 	this.timer.container.addChild(this.timer.pause);
 	this.timer.container.addChild(this.timer.counter);
 
+	this.population.container = new PIXI.Container();
+
 	this.container.addChild(this.timer.container);
+	this.container.addChild(this.population.container);
 
 	// this.score.counter = new PIXI.Text('0', {fontFamily : 'Arial', fontSize: 24, fontWeight : 'bold', fill : 0xEEEEEE});
 	// this.score.counter.position = new PIXI.Point(1128 - this.score.counter.width, 16);
@@ -243,9 +247,9 @@ GUI.prototype.Init = function () {
 	// this.container.addChild(this.score.counter);
 	// this.container.addChild(this.score.multiplier);
 
-	// this.level.on('update', this.Update, this);
 
 	this.Update();
+	this.level.on('update', this.UpdatePopulations, this);
 
 	this.Display();
 }
@@ -294,6 +298,32 @@ GUI.prototype.Update = function () {
 	// this.score.counter.position = new PIXI.Point(1128 - this.score.counter.width, 16);
 	// this.score.multiplier.text = this.level.multiplier > 1 ? 'x' + this.level.multiplier : '';
 	// this.score.multiplier.position = new PIXI.Point(1128 - this.score.multiplier.width, 16 + this.score.counter.height);
+}
+
+GUI.prototype.UpdatePopulations = function () {
+	this.population.container.removeChildren();
+
+	var rightMargin = -5;
+
+	this.level.factions.forEach(function (faction) {
+		var factionPop = new PIXI.Container();
+		var factionDot = new PIXI.Graphics();
+		factionDot.beginFill(faction.color.Darker().toInt(), 1);
+		factionDot.drawCircle(0, 0, 10);
+		factionDot.endFill();
+		var factionCount = new PIXI.Text(faction.entities.length, {fontFamily : 'Arial', fontSize: 32, fontWeight : 'bold', fill : faction.color.Darker().toInt()});
+		
+		factionDot.position = new PIXI.Point(factionDot.width / 2, factionCount.height / 2);
+		factionCount.position = new PIXI.Point(factionDot.width + 5, 0);
+
+		factionPop.addChild(factionDot);
+		factionPop.addChild(factionCount);
+
+		rightMargin += 15 + factionPop.width;
+		factionPop.position = new PIXI.Point(renderer.width - rightMargin, 5);
+
+		this.population.container.addChild(factionPop);
+	}, this);
 }
 
 GUI.prototype.Click = function () {

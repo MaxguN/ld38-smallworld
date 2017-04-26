@@ -5,19 +5,19 @@ X	procreate
 		needs 2 entities
 X	explore
 		exploration policy
-	attack
+X	attack
 		relations policy 1
 		exploration policy
-	kidnap (rng)
+X	kidnap (rng)
 		relations policy 2
 		borders policy 2
-	emmigrate (rng)
+X	emmigrate (rng)
 		morale
 		borders policy 3
-	tourism --> morale (rng)
+X	tourism --> morale (rng)
 		workload policy 1
 		borders policy 1
-	walk
+X	walk
 
 -	discuss in faction
 		workload policy
