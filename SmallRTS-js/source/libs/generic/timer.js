@@ -41,9 +41,17 @@ Timer.prototype.start = function () {
 	}
 }
 
-Timer.prototype.tick = function () {
+Timer.prototype.tick = function (length) {
 	if (this.listeners['tick']) {
 		this.listeners['tick'].forEach(function (listener) {
+			listener.func.call(listener.object, length, this.timer);
+		}, this);
+	}
+}
+
+Timer.prototype.tickSecond = function () {
+	if (this.listeners['tickSecond']) {
+		this.listeners['tickSecond'].forEach(function (listener) {
 			listener.func.call(listener.object, Math.ceil(this.timer));
 		}, this);
 	}
@@ -76,8 +84,10 @@ Timer.prototype.Tick = function (length) {
 		var oldTime = this.timer;
 		this.timer -= length * this.speed;
 
+		this.tick(length);
+
 		if (Math.ceil(this.timer) < Math.ceil(oldTime)) {
-			this.tick();
+			this.tickSecond();
 		}
 
 		if (this.timer <= 0) {

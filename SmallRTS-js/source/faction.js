@@ -96,13 +96,15 @@ Faction.prototype.AddEntity = function (entity, x, y) {
 }
 
 Faction.prototype.TransferEntity = function (entity) {
-	entity.faction.RemoveEntity(entity);
+	if (entity.alive) {
+		entity.faction.RemoveEntity(entity);
 
-	entity.FinishAction();
+		entity.FinishAction();
 
-	this.AddEntity(entity);
-	entity.faction = this;
-	entity.ResetColor();
+		this.AddEntity(entity);
+		entity.faction = this;
+		entity.ResetColor();
+	}
 }
 
 Faction.prototype.RemoveEntity = function (entity) {

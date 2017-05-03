@@ -11,7 +11,7 @@ document.body.appendChild(renderer.view);
 var player = new Player();
 var menu = new Menu(renderer);
 // var currentScene = preloader;
-var currentScene = new Level(0, player, renderer);
+var currentScene = new Level(1, player, renderer);
 currentScene = menu;
 
 function tick(length) {

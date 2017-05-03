@@ -1,16 +1,23 @@
 TODO
-	- Replay
-	- Change of world (animation, collision)
-	- real AI
+X - Change of world
+X	- Animation
+X	- Transfer data
 	- Scoring
 	- Leaderboard
+
+	- real AI
+
 	- Speed scale
+
 	- BGM
+	- SFX
+
 	(- Action feedback)
+	- Replay
 
 TOFIX
 	- infinite recursive loop
-	- faction not given to other after last kill
+X - faction not given to other after last kill
 	- faction not given on emmigration
 
 TOOPTIM

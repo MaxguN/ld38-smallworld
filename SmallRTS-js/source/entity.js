@@ -3,6 +3,7 @@ function Entity(faction) {
 	Trigger.call(this, Tags.Entity, [Tags.Zone], new PIXI.Circle(this.x, this.y, 25));
 
 	this.faction = faction;
+	this.alive = true;
 
 	this.action = null;
 	this.target = null;
@@ -55,6 +56,15 @@ Entity.prototype.DoAction = function (action) {
 				}, this);
 
 				this.speed = this.runSpeed;
+
+				this.faction.entities.forEach(function (entity) {
+					if (entity !== this) {
+						if (this.target === entity.target) {
+							this.target = null;
+							this.FinishAction();
+						}
+					}
+				}, this);
 			} else {
 				this.FinishAction();
 			}
@@ -103,6 +113,15 @@ Entity.prototype.DoAction = function (action) {
 				}, this);
 
 				this.speed = this.runSpeed;
+
+				this.faction.entities.forEach(function (entity) {
+					if (entity !== this) {
+						if (this.target === entity.target) {
+							this.target = null;
+							this.FinishAction();
+						}
+					}
+				}, this);
 			} else {
 				this.FinishAction();
 			}
@@ -177,9 +196,12 @@ Entity.prototype.Free = function () {
 }
 
 Entity.prototype.Kill = function () {
+	// console.log('Killing entity from ' + this.faction.color.toHtml());
+	this.alive = false;
 	this.faction.RemoveEntity(this);
 	this.faction.level.RemoveEntity(this);
 	this.Free();
+	// console.log('now dead');
 }
 
 Entity.prototype.MoveTo = function (x, y) {
@@ -200,25 +222,47 @@ Entity.prototype.MoveBy = function (x, y) {
 
 Entity.prototype.Tick = function (length) {
 	if (this.target) {
-		if (this.action === 'explore' && this.target.faction) {
-			this.FinishAction();
-		} else {
-			var x = this.target.shape.x - this.x;
-			var y = this.target.shape.y - this.y;
-			var distance = Math.sqrt(x * x + y * y);
-
-			if (distance) {
-				var delta = this.speed * length / distance;
-
-				if (delta > 1) {
-					delta = 1;
+		switch (this.action) {
+			case 'attack':
+				if (!this.target.alive || this.target.faction === this.faction) {
+					this.FinishAction();
+					return;
+				}
+				break;
+			case 'explore':
+				if (this.target.faction) {
+					this.FinishAction();
+					return;
+				}
+				break;
+			case 'kidnap':
+				if (!this.target.alive || this.target.faction === this.faction) {
+					this.FinishAction();
+					return;
+				}
+				break;
+			case 'procreate':
+				if (this.target && (!this.target.alive || this.target.faction !== this.faction)) {
 					this.FinishAction();
 				}
+				break;
+		}
 
-				this.MoveBy(delta * x, delta * y);
-			} else {
+		var x = this.target.shape.x - this.x;
+		var y = this.target.shape.y - this.y;
+		var distance = Math.sqrt(x * x + y * y);
+
+		if (distance) {
+			var delta = this.speed * length / distance;
+
+			if (delta > 1) {
+				delta = 1;
 				this.FinishAction();
 			}
+
+			this.MoveBy(delta * x, delta * y);
+		} else {
+			this.FinishAction();
 		}
 	}
 }

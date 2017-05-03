@@ -28,6 +28,10 @@ function Level(number, player, renderer) {
 	this.ending = false;
 	this.over = false;
 
+	this.endTimer = null;
+	this.endScale = 0.1;
+	this.endPosition = new PIXI.Point(-150, 3 * renderer.height / 4);
+
 	this.renderer = renderer;
 	this.container = new PIXI.Container();
 	this.game = new PIXI.Container();
@@ -37,7 +41,7 @@ function Level(number, player, renderer) {
 	this.world = null;
 	this.entities = [];
 	this.factions = [];
-	this.replay = new Replay();
+	// this.replay = new Replay();
 	/*
 		Record (timestamped)
 			- add entities
@@ -139,7 +143,7 @@ Level.prototype.BeginPlay = function () {
 		}
 	}, this);
 
-	console.log(this.entities);
+	// console.log(this.entities);
 }
 
 Level.prototype.GetRandomFaction = function (blacklist) {
@@ -164,6 +168,7 @@ Level.prototype.RemoveEntity = function (entity) {
 }
 
 Level.prototype.RemoveFaction = function (faction) {
+	// TODO check when it's triggered, might be too early
 	var index = this.factions.indexOf(faction);
 
 	if (index !== -1) {
@@ -250,8 +255,54 @@ Level.prototype.EndLevel = function () {
 };
 
 Level.prototype.Victory = function () {
-	menu.EndGame(true, this.interface.SecondsToDisplay(this.timer));
-	currentScene = menu;
+	// menu.EndGame(true, this.interface.SecondsToDisplay(this.timer));
+	// currentScene = menu;
+
+	this.ending = true;
+	this.endTimer = new Timer(1);
+
+	var container = new PIXI.Container();
+	var world = new SmallWorld(350, 20);
+	container.addChild(world);
+	container.scale = new PIXI.Point(this.endScale, this.endScale);
+	container.position = new PIXI.Point(this.renderer.width - this.endPosition.x, this.endPosition.y);
+	this.container.addChildAt(container, 0);
+
+	this.endTimer.on('tick', function (length) {
+		var deltaScale = (this.endScale - 1 / this.endTimer.duration) * length;
+		this.game.scale = new PIXI.Point(this.game.scale.x + deltaScale, this.game.scale.y + deltaScale);
+
+		var deltaPosition = new PIXI.Point(
+			((this.endPosition.x - this.renderer.width / 2) / this.endTimer.duration) * length,
+			((this.endPosition.y - this.renderer.height / 2) / this.endTimer.duration) * length);
+		this.game.position.x += deltaPosition.x; 
+		this.game.position.y += deltaPosition.y;
+
+		this.gameMask.clear();
+		this.gameMask.beginFill(0xffffff, 1);
+		this.gameMask.drawCircle(this.game.position.x, this.game.position.y, 350 * this.game.scale.x);
+		this.gameMask.endFill();
+
+		container.scale.x += -deltaScale;
+		container.scale.y += -deltaScale;
+		container.position.x += deltaPosition.x;
+		container.position.y += -deltaPosition.y;
+	}, this),
+
+	this.endTimer.on('end', function () {
+		this.pause = true;
+		this.ending = false;
+		this.end = true;
+
+		this.interface.Hide();
+
+		this.player.Save(this);
+		this.player.Reset();
+
+		currentScene = new Level(this.number + 1, this.player, this.renderer);
+	}, this);
+
+	this.endTimer.Start();
 };
 
 Level.prototype.Defeat = function () {
@@ -305,7 +356,9 @@ Level.prototype.Play = function () {
 
 Level.prototype.Tick = function(length) {
 	if (!this.paused) {
-		this.timer += length;
+		if (!this.ending) {
+			this.timer += length;
+		}
 
 		// this.world.Tick(length);
 		this.ais.forEach(function (ai) {
@@ -326,6 +379,10 @@ Level.prototype.Tick = function(length) {
 		}, this);
 
 		this.interface.Tick(length);
+	}
+
+	if (this.ending) {
+		this.endTimer.Tick(length);
 	}
 
 	this.Draw();

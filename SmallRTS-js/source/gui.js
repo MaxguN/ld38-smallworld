@@ -227,9 +227,20 @@ GUI.prototype.Init = function () {
 	this.timer.paused = new PIXI.Text('PAUSED', {fontFamily : 'Arial', fontSize: 32, fontWeight : 'bold', fill : 0xEEEEEE});
 	this.timer.paused.position = new PIXI.Point((renderer.width - this.timer.pause.width) / 2, 32);
 	this.timer.collider = new PIXI.Rectangle(this.timer.container.position.x, this.timer.container.position.y, 50, 50);
+	this.timer.total = new PIXI.Text(this.SecondsToDisplay(this.level.player.time), {fontFamily : 'Arial', fontSize: 20, fontWeight : 'normal', fill : 0xAAAAAA})
+	this.timer.total.anchor = new PIXI.Point(0, 1);
+	this.timer.total.position = new PIXI.Point(
+		this.timer.counter.position.x + this.timer.counter.width + 15, 
+		this.timer.counter.position.y - 1);
+	this.timer.count = new PIXI.Text('' + this.level.player.count, {fontFamily : 'Arial', fontSize: 20, fontWeight : 'normal', fill : 0xAAAAAA})
+	this.timer.count.position = new PIXI.Point(
+		this.timer.counter.position.x + this.timer.counter.width + 15,
+		this.timer.counter.position.y - 1);
 
 	this.timer.container.addChild(this.timer.pause);
 	this.timer.container.addChild(this.timer.counter);
+	this.timer.container.addChild(this.timer.total);
+	this.timer.container.addChild(this.timer.count);
 
 	this.population.container = new PIXI.Container();
 

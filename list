@@ -31,12 +31,13 @@ X	walk
 -	defend
 		borders policy
 		relations
--	trade
-		trading policy
 -	expatriation
 		workload policy (other factions)
 		borders policy
 		workload policy
+		
+-	trade
+		trading policy
 
 Relations between factions ?
 Faction morale --> emmigration
