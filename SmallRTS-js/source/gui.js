@@ -17,6 +17,7 @@ function GUI(level) {
 
 	this.timer = {};
 	this.score = {};
+	this.quit = {};
 
 	this.Init();
 }
@@ -242,9 +243,32 @@ GUI.prototype.Init = function () {
 	this.timer.container.addChild(this.timer.total);
 	this.timer.container.addChild(this.timer.count);
 
+	this.quit.container = new PIXI.Container();
+	this.quit.container.position = new PIXI.Point(renderer.width - 60, 10);
+	this.quit.button = new PIXI.Graphics();
+	this.quit.button.lineStyle(3, 0xaaaaaa, 1);
+	this.quit.button.beginFill(0x666666, 1);
+	this.quit.button.drawRect(0, 0, 50, 50);
+	this.quit.button.beginFill(0xaaaaaa, 1);
+	this.quit.button.moveTo(10, 12);
+	this.quit.button.lineTo(12, 10);
+	this.quit.button.lineTo(40, 38);
+	this.quit.button.lineTo(38, 40);
+	this.quit.button.lineTo(10, 12);
+	this.quit.button.moveTo(38, 10);
+	this.quit.button.lineTo(40, 12);
+	this.quit.button.lineTo(12, 40);
+	this.quit.button.lineTo(10, 38);
+	this.quit.button.lineTo(38, 10);
+	this.quit.button.endFill();
+	this.quit.container.addChild(this.quit.button);
+	this.quit.collider = new PIXI.Rectangle(this.quit.container.position.x, this.quit.container.position.y, 50, 50);
+
 	this.population.container = new PIXI.Container();
+	this.population.container.position = new PIXI.Point(-70, 0);
 
 	this.container.addChild(this.timer.container);
+	this.container.addChild(this.quit.container);
 	this.container.addChild(this.population.container);
 
 	// this.score.counter = new PIXI.Text('0', {fontFamily : 'Arial', fontSize: 24, fontWeight : 'bold', fill : 0xEEEEEE});
@@ -331,7 +355,7 @@ GUI.prototype.UpdatePopulations = function () {
 		factionPop.addChild(factionCount);
 
 		rightMargin += 15 + factionPop.width;
-		factionPop.position = new PIXI.Point(renderer.width - rightMargin, 5);
+		factionPop.position = new PIXI.Point(renderer.width - rightMargin, 8);
 
 		this.population.container.addChild(factionPop);
 	}, this);
@@ -340,6 +364,10 @@ GUI.prototype.UpdatePopulations = function () {
 GUI.prototype.Click = function () {
 	if (this.timer.collider.contains(mouse.x, mouse.y)) {
 		this.TogglePause();
+	}
+
+	if (this.quit.collider.contains(mouse.x, mouse.y)) {
+		this.level.Defeat();
 	}
 
 	// TODO allow policy change on pause ?

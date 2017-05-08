@@ -1,11 +1,13 @@
 TODO
-X - Change of world
-X	- Animation
-X	- Transfer data
-	- Scoring
 	- Leaderboard
+		- Server API
+		- UI (menu)
+		- Name input
 
 	- real AI
+	- Add actions
+	- Balance policies / actions
+	- Add morale
 
 	- Speed scale
 

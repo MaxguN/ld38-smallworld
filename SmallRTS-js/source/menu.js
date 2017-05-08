@@ -183,17 +183,17 @@ Menu.prototype.Play = function () {
 	currentScene = level;
 }
 
-Menu.prototype.EndGame = function (win, time) {
+Menu.prototype.EndGame = function (time, worlds) {
 	var self = this;
-	var result;
-	var timeText;
 
-	if (win) {
-		result = new PIXI.Text('YOU WIN', {fontFamily : 'Arial', fontSize: 84, fontWeight : 'bolder', fill : 0xFFFFFF});
-		timeText = new PIXI.Text(time, {fontFamily : 'Arial', fontSize: 64, fontWeight : 'bolder', fill : 0xAAAAAA});
-	} else {
-		result = new PIXI.Text('YOU LOSE', {fontFamily : 'Arial', fontSize: 84, fontWeight : 'bolder', fill : 0xFFFFFF});
+	var score = 0;// f(t, w) = (C / (t / w)) * w^1.1; C = 1 000 000
+
+	if (worlds) {
+		score = Math.round((1000000 / (time / worlds)) * Math.pow(worlds, 1.1));
 	}
+
+	var result = new PIXI.Text('GAME OVER', {fontFamily : 'Arial', fontSize: 84, fontWeight : 'bolder', fill : 0xFFFFFF});
+	var scoreText = new PIXI.Text(this.DisplayScore(score), {fontFamily : 'Arial', fontSize: 64, fontWeight : 'bolder', fill : 0xAAAAAA});
 
 	var endgame = {};
 	endgame.screen = new PIXI.Container();
@@ -208,19 +208,29 @@ Menu.prototype.EndGame = function (win, time) {
 	};
 
 	result.anchor = new PIXI.Point(0.5, 0);
-	result.position = new PIXI.Point(this.renderer.width / 2,160);
+	result.position = new PIXI.Point(this.renderer.width / 2, 80);
 	endgame.screen.addChild(result);
 
-	if (timeText) {
-		timeText.anchor = new PIXI.Point(0.5, 0);
-		timeText.position = new PIXI.Point(this.renderer.width / 2,400);
-		endgame.screen.addChild(timeText);
-	}
+	scoreText.anchor = new PIXI.Point(0.5, 0);
+	scoreText.position = new PIXI.Point(this.renderer.width / 2, 240);
+	endgame.screen.addChild(scoreText);
+
 	button_next_endgame.AddTo(endgame.screen);
 
 	this.screens.endgame = endgame;
 
 	this.SwitchTo('endgame');
+}
+
+Menu.prototype.DisplayScore = function (score) {
+	var scoreText = '';
+
+	do {
+		scoreText = '' + (score % 1000) + ' ' + scoreText; 
+		score = Math.floor(score / 1000);
+	} while (score);
+
+	return scoreText;
 }
 
 Menu.prototype.Tick = function (length) {

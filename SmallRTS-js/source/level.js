@@ -306,7 +306,12 @@ Level.prototype.Victory = function () {
 };
 
 Level.prototype.Defeat = function () {
-	menu.EndGame(false);
+	this.pause = true;
+	this.end = true;
+
+	this.interface.Hide();
+
+	menu.EndGame(this.player.time, this.player.count);
 	currentScene = menu;
 };
 
