@@ -27,9 +27,10 @@ Menu.prototype.Init = function (data) {
 	title.position = new PIXI.Point(this.renderer.width / 2, 50);
 	subtitle.anchor = new PIXI.Point(0.5, 0);
 	subtitle.position = new PIXI.Point(this.renderer.width / 2, 150);
-	var button_play = new Button('PLAY', (this.renderer.width + 200) / 2, 300, 300, 64);
-	var button_controls = new Button('INSTRUCTIONS', (this.renderer.width + 200) / 2, 400, 300, 64);
-	var button_credits = new Button('CREDITS', (this.renderer.width + 200) / 2, 500, 300, 64);
+	var button_play = new Button('PLAY', (this.renderer.width + 200) / 2, 289, 300, 64);
+	var button_controls = new Button('INSTRUCTIONS', (this.renderer.width + 200) / 2, 363, 300, 64);
+	var button_credits = new Button('CREDITS', (this.renderer.width + 200) / 2, 437, 300, 64);
+	var button_leaderboard = new Button('LEADERBOARD', (this.renderer.width + 200) / 2, 511, 300, 64);
 	var quick_instructions = new PIXI.Text('You\'re the blue faction', {fontFamily : 'Arial', fontSize: 48, fontWeight : 'lighter', fill : 0xAAAAEE, align : 'center', wordWrap : true, wordWrapWidth: 450});
 	var quick_instructions2 = new PIXI.Text('Use policies to control your faction', {fontFamily : 'Arial', fontSize: 48, fontWeight : 'lighter', fill : 0xAAAAEE, align : 'center', wordWrap : true, wordWrapWidth: 450});
 	quick_instructions.anchor = new PIXI.Point(0.5, 0);
@@ -44,6 +45,7 @@ Menu.prototype.Init = function (data) {
 	button_play.AddTo(main.screen);
 	button_controls.AddTo(main.screen);
 	button_credits.AddTo(main.screen);
+	button_leaderboard.AddTo(main.screen);
 
 	main.listener = function (event) {
 		if (event.button === 0) {
@@ -54,6 +56,10 @@ Menu.prototype.Init = function (data) {
 				self.SwitchTo('controls');
 			} else if (button_credits.collider.contains(mouse.x, mouse.y)) {
 				self.SwitchTo('credits');
+			} else if (button_leaderboard.collider.contains(mouse.x, mouse.y)) {
+				self.SwitchTo('leaderboard', function () {
+					ajax.getJSON('leaderboard.php?action=list', this.PopulateLeaderboard, this);
+				}, self);
 			}
 		}
 	};
@@ -99,6 +105,33 @@ Menu.prototype.Init = function (data) {
 			}
 		}
 	};
+
+	// leaderboard
+	var leaderboard = {};
+	leaderboard.screen = new PIXI.Container();
+	var button_back_leaderboard = new Button('BACK TO MENU', 10, 674, 200, 36)
+	var button_play_leaderboard = new Button('PLAY', 1120, 674, 150, 36)
+	var title = new PIXI.Text('LEADERBOARD', {fontFamily : 'Arial', fontSize: 84, fontWeight : 'bolder', fill : 0xFFFFFF});
+	leaderboard.scores = new PIXI.Container();
+
+	title.anchor = new PIXI.Point(0.5, 0);
+	title.position = new PIXI.Point(this.renderer.width / 2, 80);
+
+	leaderboard.screen.addChild(title);
+	leaderboard.screen.addChild(leaderboard.scores);
+	button_play_leaderboard.AddTo(leaderboard.screen);
+	button_back_leaderboard.AddTo(leaderboard.screen);
+
+	leaderboard.listener = function (event) {
+		if (event.button === 0) {
+			if (button_play_leaderboard.collider.contains(mouse.x, mouse.y)) {
+				self.SwitchTo();
+				self.Play();
+			} else if (button_back_leaderboard.collider.contains(mouse.x, mouse.y)) {
+				self.SwitchTo('main');
+			}
+		}
+	};
 	
 	// credits
 	var credits = {};
@@ -134,6 +167,7 @@ Menu.prototype.Init = function (data) {
 
 	this.screens.main = main;
 	this.screens.controls = controls;
+	this.screens.leaderboard = leaderboard;
 	this.screens.credits = credits;
 
 	this.SwitchTo('main');
@@ -165,7 +199,7 @@ Menu.prototype.ready = function(callback) {
 	}
 };
 
-Menu.prototype.SwitchTo = function (screen) {
+Menu.prototype.SwitchTo = function (screen, callback, object) {
 	for (var index in this.screens) {
 		this.container.removeChild(this.screens[index].screen);
 		mouse.off('click', this.screens[index].listener);
@@ -174,6 +208,10 @@ Menu.prototype.SwitchTo = function (screen) {
 	if (screen) {
 		this.container.addChild(this.screens[screen].screen);
 		mouse.on('click', this.screens[screen].listener);
+
+		if (callback) {
+			callback.call(object);
+		}
 	}
 }
 
@@ -194,18 +232,10 @@ Menu.prototype.EndGame = function (time, worlds) {
 
 	var result = new PIXI.Text('GAME OVER', {fontFamily : 'Arial', fontSize: 84, fontWeight : 'bolder', fill : 0xFFFFFF});
 	var scoreText = new PIXI.Text(this.DisplayScore(score), {fontFamily : 'Arial', fontSize: 64, fontWeight : 'bolder', fill : 0xAAAAAA});
+	var nameInput = new PixiTextInput('', {fontFamily : 'Arial', fontSize: 64, fontWeight : 'bolder', fill : 0x000000});
 
 	var endgame = {};
 	endgame.screen = new PIXI.Container();
-	var button_next_endgame = new Button('NEXT', 1120, 674, 150, 36)
-
-	endgame.listener = function (event) {
-		if (event.button === 0) {
-			if (button_next_endgame.collider.contains(mouse.x, mouse.y)) {
-				self.SwitchTo('credits');
-			}
-		}
-	};
 
 	result.anchor = new PIXI.Point(0.5, 0);
 	result.position = new PIXI.Point(this.renderer.width / 2, 80);
@@ -215,19 +245,77 @@ Menu.prototype.EndGame = function (time, worlds) {
 	scoreText.position = new PIXI.Point(this.renderer.width / 2, 240);
 	endgame.screen.addChild(scoreText);
 
-	button_next_endgame.AddTo(endgame.screen);
+	nameInput.width = 400;
+	nameInput.position = new PIXI.Point(this.renderer.width / 2 - 200, scoreText.y + scoreText.height + 50);
+	endgame.screen.addChild(nameInput);
+
+	var button_submit_endgame = new Button('SUBMIT', nameInput.x, nameInput.y + nameInput.height + 50, 190, 50)
+	var button_skip_endgame = new Button('SKIP', nameInput.x + nameInput.width - 190 , nameInput.y + nameInput.height + 50, 190, 50)
+
+	endgame.listener = function (event) {
+		if (event.button === 0) {
+			var callback = function () {
+				ajax.getJSON('leaderboard.php?action=list', this.PopulateLeaderboard, this);
+			};
+
+			if (button_submit_endgame.collider.contains(mouse.x, mouse.y)) {
+				var name = nameInput.text;
+
+				if (name) {
+					ajax.get('leaderboard.php?action=save&score=' + score + '&name=' + name, function (response) {
+						if (response === 'ok') {
+							self.SwitchTo('leaderboard', callback, self);
+						}
+					});
+				}
+			
+			}
+			if (button_skip_endgame.collider.contains(mouse.x, mouse.y)) {
+				self.SwitchTo('leaderboard', callback, self);
+			}
+		}
+	};
+
+	button_submit_endgame.AddTo(endgame.screen);
+	button_skip_endgame.AddTo(endgame.screen);
 
 	this.screens.endgame = endgame;
 
 	this.SwitchTo('endgame');
 }
 
+Menu.prototype.PopulateLeaderboard = function (data) {
+	var scores = this.screens.leaderboard.scores;
+
+	scores.removeChildren();
+
+	data.forEach(function (entry, index) {
+		var name = new PIXI.Text(entry.name, {fontFamily : 'Arial', fontSize: 48, fontWeight : 'bolder', fill : 0xCCCCCC});
+		name.anchor = new PIXI.Point(0, 0);
+		name.position = new PIXI.Point(this.renderer.width / 4, 240 + index * (name.height + 20));
+
+		var score = new PIXI.Text(this.DisplayScore(entry.score), {fontFamily : 'Arial', fontSize: 48, fontWeight : 'bolder', fill : 0xCCCCCC});
+		score.anchor = new PIXI.Point(1, 0);
+		score.position = new PIXI.Point(3 * this.renderer.width / 4, 240 + index * (name.height + 20));
+
+		scores.addChild(name);
+		scores.addChild(score);
+	}, this);
+}
+
 Menu.prototype.DisplayScore = function (score) {
 	var scoreText = '';
+	var temp;
 
 	do {
-		scoreText = '' + (score % 1000) + ' ' + scoreText; 
+		temp = '' + (score % 1000);
 		score = Math.floor(score / 1000);
+		
+		while (score && temp.length < 3) {
+			temp = '0' + temp;
+		}
+
+		scoreText = temp + ' ' + scoreText; 
 	} while (score);
 
 	return scoreText;

@@ -1,9 +1,4 @@
 TODO
-	- Leaderboard
-		- Server API
-		- UI (menu)
-		- Name input
-
 	- real AI
 	- Add actions
 	- Balance policies / actions

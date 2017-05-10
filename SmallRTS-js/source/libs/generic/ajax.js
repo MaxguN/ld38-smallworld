@@ -11,9 +11,9 @@ var ajax = {
 		xhr.open('GET', url, true);
 		xhr.send(null);
 	},
-	getJSON : function (url, callback) {
+	getJSON : function (url, callback, self) {
 		ajax.get(url, function (data) {
-			callback(JSON.parse(data));
+			callback.call(self, JSON.parse(data));
 		});
 	},
 	post : function (url, data, callback) {
