@@ -1,8 +1,8 @@
 TODO
-	- real AI
-	- Add actions
+X - Add actions
+X - Add morale
 	- Balance policies / actions
-	- Add morale
+	- real AI
 
 	- Speed scale
 

@@ -19,22 +19,24 @@ X	tourism --> morale (rng)
 		borders policy 1
 X	walk
 
--	discuss in faction
+X	defend
+		borders policy
+		relations
+X	expatriate
+		workload policy (other factions)
+		borders policy
+		workload policy
+X	interact
 		workload policy
 		needs 2 entities
 		morale
--	discuss with other faction (convince)
+X	interactAbroad (convince)
 		morale
 		borders policy
 		workload policy
 		relations policy
--	defend
-		borders policy
-		relations
--	expatriation
-		workload policy (other factions)
-		borders policy
-		workload policy
+X	internalAttack (rng)
+		rebellion
 		
 -	trade
 		trading policy

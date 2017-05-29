@@ -158,6 +158,23 @@ Level.prototype.GetRandomFaction = function (blacklist) {
 	return faction;
 }
 
+Level.prototype.GetRandomHighFaction = function (policy, blacklist) {
+	var factions = [];
+	var faction = null;
+
+	this.factions.forEach(function (fact) {
+		if (fact !== blacklist && fact.policies[policy] >= 7) {
+			factions.push(fact);
+		}
+	}, this);
+
+	if (factions.length) {
+		faction = factions[Math.floor(Math.random() * factions.length)];
+	}
+
+	return faction;
+}
+
 Level.prototype.RemoveEntity = function (entity) {
 	var index = this.entities.indexOf(entity);
 

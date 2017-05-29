@@ -15,6 +15,11 @@ function Faction(color, level, container, x, y) {
 		borders : 0,
 		relations : 0
 	};
+	this.trends = {
+		morale : 0,
+		rebellion : 0
+	};
+	// TODO in some cases (high rebellion / low morale), have entities not follow policies and do what they want to
 	this.policiesOrder = [];
 	this.relations = null;
 	this.morale = 0;
@@ -147,6 +152,21 @@ Faction.prototype.GetOtherEntitiesOnTerritory = function () {
 	return entities;
 }
 
+Faction.prototype.GetBorderZones = function () {
+	var zones = [];
+
+	this.territory.zones.forEach(function (zone) {
+		zone.neighbors.some(function (neighbor) {
+			if (!neighbor.faction || neighbor.faction !== this) {
+				zones.push(zone);
+				return true;
+			}
+		}, this);
+	}, this);
+
+	return zones;
+}
+
 Faction.prototype.ClaimZone = function (zone) {
 	if (zone.faction) {
 		zone.faction.AbandonZone(zone);
@@ -188,28 +208,63 @@ Faction.prototype.ReorderPolicies = function () {
 	}
 }
 
-Faction.prototype.addActionAttack = function (actionCount) {
+Faction.prototype.addActionAttack = function () {
 	var hostility = -this.policies.relations;
 	var exploration = this.policies.exploration;
 	var probability = exploration / 10;
 
-	while (this.actions.length < actionCount && hostility > 0) {
+	while (hostility > 0) {
 		if (Math.random() < probability) {
 			this.actions.push('attack');
+			hostility -= 4;
+		} else {
+			hostility -= 1;
 		}
-		hostility -= 4;
 	}
 }
 
-Faction.prototype.addActionEmmigrate = function (actionCount) {
+Faction.prototype.addActionDefend = function () {
+	var closed = -this.policies.borders;
+	var probability = 0.5;
+
+	while (closed > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('defend');
+			closed -= 3;
+		} else {
+			closed -= 1;
+		}
+	}
+}
+
+Faction.prototype.addActionEmmigrate = function () {
 	var closeness = -this.policies.borders;
 	var probability = 0.1;
 
-	while (this.actions.length < actionCount && closeness > 0) {
+	while (closeness > 0) {
 		if (Math.random() < probability) {
 			this.actions.push('emmigrate');
+			closeness -= 3;
+		} else {
+			closeness -= 1;
 		}
-		closeness -= 3;
+	}
+}
+
+Faction.prototype.addActionExpatriate = function () {
+	var freetime = 10 - this.policies.workload;
+	var openness = Math.max(0, Math.min(10, this.policies.borders));
+	var probability = openness / 10;
+
+	// TODO add workload of other factions into the formula
+
+	while (freetime > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('expatriate');
+			freetime -= 3;
+		} else {
+			freetime -= 1;
+		}
 	}
 }
 
@@ -219,6 +274,54 @@ Faction.prototype.addActionExplore = function (actionCount) {
 	while (this.canExplore && this.actions.length < actionCount && exploration > 0) {
 		this.actions.push('explore'); // TODO check if necessary to add RNG
 		exploration -= 2;
+	}
+}
+
+Faction.prototype.addActionInteract = function () {
+	var freetime = 10 - this.policies.workload;
+	var probability = 0.5;
+
+	while (freetime > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('interact');
+			freetime -= 3;
+		} else {
+			freetime -= 1;
+		}
+	}
+}
+
+Faction.prototype.addActionInteractAbroad = function () {
+	var freetime = 10 - this.policies.workload;
+	var peaceful = Math.max(0, Math.min(10, this.policies.relations));
+	var openness = Math.max(0, Math.min(10, this.policies.borders));
+	var probability1 = openness / 10;
+	var probability2 = peaceful / 10;
+
+	// TODO add relations in the mix 
+	
+	while (freetime > 0) {
+		if (Math.random() < probability1 && Math.random() < probability2) {
+			this.actions.push('interactAbroad');
+			freetime -= 3;
+		} else {
+			freetime -= 1;
+		}
+	}
+}
+
+Faction.prototype.addActionInternalAttack = function () {
+	var rebellion = - this.trends.morale;
+	var probability = 0.2;
+
+
+	while (rebellion > 0) {
+		if (Math.random() < probability) {
+			this.actions.push('internalAttack');
+			rebellion -= 2;
+		} else {
+			rebellion -= 1;
+		}
 	}
 }
 
@@ -249,19 +352,22 @@ Faction.prototype.addActionProcreate = function (actionCount) {
 }
 
 Faction.prototype.addActionTrade = function (actionCount) {
-
 }
 
-Faction.prototype.addActionTourism = function (actionCount) {
+Faction.prototype.addActionTourism = function () {
 	var freetime = 10 - this.policies.workload;
 	var openness = Math.max(0, Math.min(10, this.policies.borders));
 	var probability = openness / 10;
 
-	while (this.actions.length < actionCount && freetime >= 0) {
+	// TODO add morale into the formula
+
+	while (freetime >= 0) {
 		if (Math.random() < probability) {
 			this.actions.push('tourism');
+			freetime -= 3;
+		} else {
+			freetime -= 1;
 		}
-		freetime -= 3;
 	}
 }
 
@@ -269,31 +375,59 @@ Faction.prototype.RunAlgorithm = function () {
 	if (this.actions.length === 0) {
 		var actionCount = Math.max(2, Math.min(10, this.entities.length));
 		
-		this.addActionProcreate(actionCount);
+		if (true) {
+			this.addActionProcreate(actionCount);
 
-		this.policiesOrder.forEach(function (policy) {
-			switch (policy) {
-				case 'borders':
-					this.addActionTourism(actionCount);
-					this.addActionKidnap(actionCount);
-					this.addActionEmmigrate(actionCount);
-					break;
-				case 'trading':
-					this.addActionTrade(actionCount);
-					break;
-				case 'exploration':
-					this.addActionExplore(actionCount);
-					this.addActionAttack(actionCount);
-					break;
-				case 'relations':
-					this.addActionAttack(actionCount);
-					this.addActionKidnap(actionCount);
-					break;
-				case 'workload':
-					this.addActionTourism(actionCount);
-					break;
-			}
-		}, this);
+			this.policiesOrder.forEach(function (policy) {
+				switch (policy) {
+					case 'borders':
+						this.addActionExpatriate(actionCount);
+						this.addActionInteractAbroad(actionCount);
+						this.addActionTourism(actionCount);
+						this.addActionDefend(actionCount);
+						this.addActionKidnap(actionCount);
+						this.addActionEmmigrate(actionCount);
+						break;
+					case 'trading':
+						this.addActionTrade(actionCount);
+						break;
+					case 'exploration':
+						this.addActionExplore(actionCount);
+						this.addActionAttack(actionCount);
+						break;
+					case 'relations':
+						this.addActionInteractAbroad(actionCount);
+						this.addActionAttack(actionCount);
+						this.addActionDefend(actionCount);
+						this.addActionKidnap(actionCount);
+						break;
+					case 'workload':
+						this.addActionExpatriate(actionCount);
+						this.addActionInteract(actionCount);
+						this.addActionTourism(actionCount);
+						this.addActionInteractAbroad(actionCount);
+						break;
+				}
+			}, this);
+
+			this.addActionInternalAttack(actionCount);
+		} else {
+			this.addActionAttack();
+			this.addActionEmmigrate();
+			this.addActionExpatriate();
+			this.addActionExplore();
+			this.addActionDefend();
+			this.addActionInteract();
+			this.addActionInteractAbroad();
+			this.addActionInternalAttack();
+			this.addActionKidnap();
+			this.addActionProcreate();
+			this.addActionTourism();
+			this.addActionTrade();
+
+			// TODO random selection into actions array
+		}
+
 
 		while (this.actions.length < actionCount) {
 			this.actions.push('walk');
@@ -330,6 +464,8 @@ Faction.prototype.StopExploration = function () {
 }
 
 Faction.prototype.Tick = function (length) {
+	this.trends.morale = Math.max(0, this.trends.morale - (1 / 30) * length);
+
 	this.RunAlgorithm();
 	this.DoActions();
 
